@@ -1,9 +1,14 @@
 # Winterflood
 
+## Project Structure
+
 This repository contains two projects:
 
-- `Winterflood.Server` — ASP.NET server targeting .NET 10
-- `winterflood.client` — Angular 18 client app
+- **Winterflood.Server** — ASP.NET Core Web API targeting .NET 10
+- **winterflood.client** — Angular 18 client application
+
+Running the ASP.NET Server project will automatically start the Angular client application via SPA middleware integration.
+
 
 **Prerequisites**
 
