@@ -24,62 +24,27 @@ This repository contains two projects:
 
   On Windows this may prompt for elevation.
 
-**Run the server**
+# 🚀 Running the Project
 
-1. Open a terminal in the solution root and change to the server folder:
+This solution is configured so that **running the ASP.NET Core API automatically starts the Angular frontend**.
 
-   ```powershell
-   cd Winterflood.Server
-   ```
+The Angular application is hosted using the ASP.NET Core SPA middleware. When the API starts, it:
 
-2. Restore/build and run:
+1. Launches the Angular development server using `npm start`
+2. Waits for the Angular build to complete
+3. Proxies frontend requests through the API server
 
-   ```powershell
-   dotnet restore
-   dotnet run
-   ```
+This means you only need to start **one project**.
 
-3. (Optional) For live-reload during development use:
+---
 
-   ```powershell
-   dotnet watch run
-   ```
+## ▶️ How to Run the Application
 
-**Run the client (Angular)**
+### Option 1 — Using Visual Studio
 
-1. Open a terminal and change to the client folder:
+1. Set the **API project** as the startup project.
+2. Press **F5** or click **Run**.
+3. The browser will open at the API URL (e.g. `https://localhost:7030`).
+4. The Angular app will automatically compile and load.
 
-   ```powershell
-   cd winterflood.client
-   ```
-
-2. Install dependencies and start the dev server (on Windows):
-
-   ```powershell
-   npm install
-   npm run start:windows
-   ```
-
-   On macOS/Linux use:
-
-   ```bash
-   npm install
-   npm run start:default
-   ```
-
-Notes:
-
-- The `prestart` script runs `aspnetcore-https` to wire up the dev certificate used by the Angular dev server. If you see certificate errors, ensure the dev cert is trusted (see above).
-- `npm start` in this project uses `run-script-os` to choose the correct platform script; you can call `npm run start:windows` or `npm run start:default` directly.
-
-**Build/Production**
-
-- Server: `dotnet publish -c Release`
-- Client: `npm run build` (produces dist in the client project)
-
-**Troubleshooting**
-
-- If ports conflict, check startup output for the port numbers and adjust or stop conflicting services.
-- If `dotnet` or `node` commands are not found, confirm the SDKs are installed and the PATH is refreshed.
-
-If you want, I can add small scripts or VS Code launch tasks to automate these commands.
+No separate Angular startup is required.
