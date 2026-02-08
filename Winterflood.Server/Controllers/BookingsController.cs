@@ -31,6 +31,10 @@ namespace Winterflood.Server.Controllers
             int userId = 1; // Pretend this comes from the authenticated user context
 
             var booking = await _unitOfWork.Bookings.GetBookingResponseIdAsync(id);
+            if (booking == null) return NotFound();
+
+            if (booking.UserId != userId) return Forbid();
+
             return Ok(booking);
         }
 
@@ -41,9 +45,9 @@ namespace Winterflood.Server.Controllers
 
             var inventoryItem = await _unitOfWork.Inventory.GetInventoryByIdAsync(createBookingDto.InventoryId);
 
-            if (inventoryItem == null) return NotFound(new { message = "Inventory item not found." });
+            if (inventoryItem == null) return NotFound();
 
-            if (createBookingDto.NumberOfItems > inventoryItem.TotalUnits) return BadRequest("Insufficient stock");
+            if (createBookingDto.NumberOfItems > inventoryItem.TotalUnits || createBookingDto.NumberOfItems <= 0 ) return BadRequest();
 
             if (
                 inventoryItem.EventDate == null &&
@@ -52,8 +56,11 @@ namespace Winterflood.Server.Controllers
                 return BadRequest("Booking dates not valid");
             }
 
+            if (inventoryItem.EventDate == null && createBookingDto.BookingEndDate <= createBookingDto.BookingStartDate)
+                return BadRequest("End date must be after start date");
+
             var daysBooked = inventoryItem.EventDate != null ? 1 :
-                GetDaysBooked(createBookingDto.BookingStartDate, createBookingDto.BookingEndDate);
+                GetDaysBooked((DateTime)createBookingDto.BookingStartDate!, (DateTime)createBookingDto.BookingEndDate!);
 
             var newBooking = new Booking
             {
@@ -86,20 +93,36 @@ namespace Winterflood.Server.Controllers
 
             var booking = await _unitOfWork.Bookings.GetBookingByIdAsync(updateBookingDto.BookingId);
 
-            if (booking == null) return NotFound(new { message = "Booking not found." });
+            if (booking == null) return NotFound();
 
             if (booking.UserId != userId) return Forbid();
 
             var inventoryItem = await _unitOfWork.Inventory.GetInventoryByIdAsync(booking.InventoryId);
 
-            if (inventoryItem == null) return NotFound(new { message = "Inventory item not found." });
+            if (inventoryItem == null) return NotFound();
+
+            if (updateBookingDto.NumberOfItems > inventoryItem.TotalUnits ||
+                updateBookingDto.NumberOfItems <= 0
+            ) return BadRequest();
+
+            if (
+                inventoryItem.EventDate == null &&
+                (updateBookingDto.BookingStartDate == null || updateBookingDto.BookingEndDate == null)
+            )
+            {
+                return BadRequest("Booking dates not valid");
+            }
+
+            if (inventoryItem.EventDate == null && updateBookingDto.BookingEndDate <= updateBookingDto.BookingStartDate)
+                return BadRequest("End date must be after start date");
+
 
             var daysBooked = inventoryItem.EventDate != null ? 1 :
-                GetDaysBooked(updateBookingDto.BookingStartDate, updateBookingDto.BookingEndDate);
+                GetDaysBooked((DateTime)updateBookingDto.BookingStartDate!, (DateTime)updateBookingDto.BookingEndDate!);
 
             booking.LastModified = DateTime.UtcNow;
-            booking.BookingStartDate = updateBookingDto.BookingStartDate;
-            booking.BookingEndDate = updateBookingDto.BookingEndDate;
+            booking.BookingStartDate = (DateTime)(inventoryItem.EventDate ?? updateBookingDto.BookingStartDate!);
+            booking.BookingEndDate = (DateTime)(inventoryItem.EventDate ?? updateBookingDto.BookingEndDate!);
             booking.NumberOfItems = updateBookingDto.NumberOfItems;
             booking.TotalPrice = updateBookingDto.NumberOfItems * booking.PricePerUnit * daysBooked;
 
@@ -114,7 +137,7 @@ namespace Winterflood.Server.Controllers
 
             var booking = await _unitOfWork.Bookings.GetBookingByIdAsync(id);
 
-            if (booking == null) return NotFound(new { message = "Booking not found." });
+            if (booking == null) return NotFound();
 
             if (booking.UserId != userId) return Forbid();
 
@@ -125,19 +148,10 @@ namespace Winterflood.Server.Controllers
             return NoContent();
         }
 
-        private int GetDaysBooked(DateTime? startDate, DateTime? endDate)
+        private int GetDaysBooked(DateTime startDate, DateTime endDate)
         {
-            int daysBooked = 1;
-
-            if (startDate != null && endDate != null)
-            {
-                daysBooked = DateOnly.FromDateTime((DateTime)endDate).DayNumber -
-                    DateOnly.FromDateTime((DateTime)startDate).DayNumber;
-            }
-
-            if (daysBooked >= 1) return daysBooked;
-
-            throw new Exception("Invalid dates provided");
+            return DateOnly.FromDateTime((DateTime)endDate).DayNumber -
+                DateOnly.FromDateTime((DateTime)startDate).DayNumber;
         }
     }
 }
