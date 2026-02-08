@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".gitignore" />
+  </Folder>
+  <Project Path="winterflood.client/winterflood.client.esproj">
+    <Build />
+    <Deploy />
+  </Project>
+  <Project Path="Winterflood.Server/Winterflood.Server.csproj" />
+</Solution>

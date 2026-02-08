@@ -1,0 +1,223 @@
+<div class="jumbotron">
+  <h1 class="display-4 text-primary">Booking world!</h1>
+  <p class="lead">The world's most advanced event and holiday booking site.</p>
+  <hr class="my-4">
+  <!-- <p>It uses utility classes for typography and spacing to space content out within the larger container.</p>
+  <p class="lead">
+    <a class="btn btn-primary btn-lg" href="#" role="button">Learn more</a>
+  </p> -->
+</div>
+
+<div class="mt-5">
+  @if (!selectedItemForBooking() && !selectedItemForEditing()) {
+  <h2 class="text-success">My Bookings</h2>
+
+  @if (bookings.length === 0) {
+  <div>You don't have any bookings</div>
+  }
+  @else {
+  <div class="d-flex justify-content-center mt-4">
+    <div class="form-control w-75">
+      <div class="container">
+        <div class="row">
+          <div class="col-sm">
+            Created on
+          </div>
+          <div class="col-sm">
+            Item
+          </div>
+          <div class="col-sm">
+            Number of items
+          </div>
+          <div class="col-sm">
+            Price per item/day
+          </div>
+          <div class="col-sm">
+            Total Price
+          </div>
+          <div class="col-sm">
+            View
+          </div>
+        </div>
+        @for(booking of bookings; track booking.id) {
+        <div class="row mt-2">
+          <div class="col-sm">
+            {{booking.creationDate | date:'longDate'}}
+          </div>
+          <div class="col-sm">
+            {{booking.inventory }}
+          </div>
+          <div class="col-sm">
+            {{booking.numberOfItems}}
+          </div>
+          <div class="col-sm">
+            {{booking.pricePerUnit | currency:'R'}}
+          </div>
+          <div class="col-sm">
+            {{booking.totalPrice | currency:'R'}}
+          </div>
+          <div class="col-sm">
+            <button type="button" class="btn btn-primary btn-sm" (click)="onEditItem(booking)">View</button>
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+  }
+
+  <div>
+    <h2 class="text-success mt-5">Catalog</h2>
+    <div class="d-flex flex-wrap justify-content-center mt-4">
+      @for(item of inventory; track item.id) {
+      <div class="card mx-2 mb-4" style="width: 18rem;">
+        <div class="card-body">
+          <h5 class="card-title">{{item.name}}</h5>
+          <p class="card-text">{{item.description}}
+          </p>
+          <a href="#" class="btn btn-primary" (click)="onViewItem(item)">Book</a>
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+  }
+
+  @if (selectedItemForBooking()) {
+  <h2 class="mb-4 text-success">New Booking</h2>
+  <div class="d-flex ms-4 me-4">
+    <div class="card w-50 me-2" style="width: 18rem;">
+      <div class="card-body">
+        <h5 class="card-title text-success">{{ selectedItemForBooking().name }}</h5>
+        <p class="card-text">{{selectedItemForBooking().description}}
+        </p>
+        @if(selectedItemForBooking().eventDate) {
+        <span>Date:</span>
+        <p class="text-success">{{selectedItemForBooking().eventDate | date:'longDate' }}</p>
+        }
+      </div>
+    </div>
+    <div class="form-control w-50 ms-2">
+      <form>
+        <div class="form-group d-flex align-items-center justify-content-between">
+          <label for="exampleFormControlInput1">Number of items</label>
+          <input type="number" name="unitsToBook" class="form-control" id="exampleFormControlInput1"
+            [max]="selectedItemForBooking().availableItems" min="1" style="width: 60px;" [ngModel]="unitsToBook()"
+            (ngModelChange)="unitsToBook.set($event)">
+        </div>
+
+        @if (!selectedItemForBooking().eventDate) {
+        <div class="d-flex">
+          <div class="me-2">
+            <label for="bookingStart" class="me-2">Start date:</label>
+            <input type="date" id="bookingStart" name="bookingStart" [ngModel]="startDate()"
+              (ngModelChange)="startDate.set($event)" />
+          </div>
+          <div>
+            <label for="bookingEnd" class="me-2">End date:</label>
+            <input type="date" id="bookingEnd" name="bookingEnd" [ngModel]="endDate()"
+              (ngModelChange)="endDate.set($event)" />
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-between mt-4">
+          <div>Total Days</div>
+          <div>{{totalDays()}}</div>
+        </div>
+        }
+        <div class="form-group d-flex align-items-center justify-content-between mt-4">
+          <div>Price per unit</div>
+          <div>{{selectedItemForBooking().pricePerDay | currency:'R'}}</div>
+        </div>
+        <div class="form-group d-flex align-items-center justify-content-between mt-4">
+          <div>Total</div>
+          <div>
+            {{totalAmountSignal() | currency:'R'}}
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="">
+    <button type="button" class="btn btn-primary mt-4 me-2" (click)="onBook()">Make Booking</button>
+    <button type="button" class="btn btn-danger mt-4" (click)="onCancelBooking()">Cancel</button>
+  </div>
+  }
+
+  @if (selectedItemForEditing()) {
+  <h2 class="mb-4 text-success">Edit Booking</h2>
+  <div class="d-flex ms-4 me-4">
+    <div class="card w-50 me-2" style="width: 18rem;">
+      <div class="card-body">
+        <h5 class="card-title text-success">{{ selectedItemForEditing().inventory }}</h5>
+        <p class="card-text">{{selectedItemForEditing().description}}
+        </p>
+        @if(selectedItemForEditing().eventDate) {
+        <span>Date:</span>
+        <p class="text-success">{{selectedItemForBooking().eventDate | date:'longDate' }}</p>
+        }
+      </div>
+    </div>
+    <div class="form-control w-50 ms-2">
+      <form>
+        <div class="form-group d-flex align-items-center justify-content-between">
+          <label for="editUnits">Number of items</label>
+          <input type="number" name="unitsToBook" class="form-control" id="editUnits"
+            [max]="selectedItemForEditing().availableItems" min="1" style="width: 60px;" [ngModel]="unitsToBook()"
+            (ngModelChange)="unitsToBook.set($event)">
+        </div>
+
+        @if (!selectedItemForEditing().eventDate) {
+        <div class="d-flex">
+          <div class="me-2">
+            <label for="editStart" class="me-2">Start date:</label>
+            <input type="date" id="editStart" name="editStart" [ngModel]="startDate()"
+              (ngModelChange)="startDate.set($event)" />
+          </div>
+          <div>
+            <label for="editEnd" class="me-2">End date:</label>
+            <input type="date" id="editEnd" name="editEnd" [ngModel]="endDate()"
+              (ngModelChange)="endDate.set($event)" />
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-between mt-4">
+          <div>Total Days</div>
+          <div>{{totalDays()}}</div>
+        </div>
+        }
+        <div class="form-group d-flex align-items-center justify-content-between mt-4">
+          <div>Price per unit</div>
+          <div>{{selectedItemForEditing().pricePerUnit | currency:'R'}}</div>
+        </div>
+        <div class="form-group d-flex align-items-center justify-content-between mt-4">
+          <div>Total</div>
+          <div>
+            {{totalAmountEditSignal() | currency:'R'}}
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="">
+    <button type="button" class="btn btn-primary mt-4 me-2" (click)="onEdit()">Edit Booking</button>
+    <button type="button" class="btn btn-danger mt-4 me-2" (click)="onDelete()">Delete Booking</button>
+    <button type="button" class="btn btn-warning mt-4" (click)="onCancelBooking()">Cancel</button>
+  </div>
+  }
+</div>
+
+
+
+<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+  <div class="toast-header">
+    <strong class="me-auto">Bootstrap</strong>
+    <small>11 mins ago</small>
+    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+  </div>
+  <div class="toast-body">
+    Hello, world! This is a toast message.
+  </div>
+</div>
