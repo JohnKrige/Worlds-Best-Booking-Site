@@ -9,7 +9,6 @@ This repository contains two projects:
 
 Running the ASP.NET Server project will automatically start the Angular client application via SPA middleware integration.
 
-
 **Prerequisites**
 
 - **.NET 10 SDK** — install from https://dotnet.microsoft.com/en-us/download/dotnet/10.0
@@ -28,6 +27,14 @@ Running the ASP.NET Server project will automatically start the Angular client a
   ```
 
   On Windows this may prompt for elevation.
+
+  ## 🔧 Initial Setup (First Time Only)
+
+After cloning the repository, install the Angular client dependencies:
+
+```bash
+cd winterflood.client
+npm install
 
 # 🚀 Running the Project
 
