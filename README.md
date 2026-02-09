@@ -7,6 +7,8 @@ This repository contains two projects:
 
 Running the API can also launch the Angular frontend via the ASP.NET Core SPA middleware.
 
+The backend uses **Entity Framework Core (Code First)**. The database must be created/updated using EF Core migrations before running the application for the first time.
+
 ## Prerequisites
 
 - **.NET 10 SDK** — install from https://dotnet.microsoft.com/en-us/download/dotnet/10.0
